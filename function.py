@@ -72,7 +72,7 @@ def lambda_handler(event, context):
 #      Params = {'Bucket' : BUCKET, 'Key' : KEY},
 #      ExpiresIn = 3600,
 #      HttpMethod = 'GET')
-    image_url='https://20190621-serverless-handson-ryoishim.s3-ap-northeast-1.amazonaws.com/img/' + KEY
+    image_url='https://ReplaceS3BucketName/' + KEY
     print(image_url)
     
     # Replay用リクエスト生成
