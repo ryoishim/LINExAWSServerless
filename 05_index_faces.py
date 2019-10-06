@@ -5,7 +5,7 @@ import boto3
 
 if __name__ == "__main__":
 
-    bucket='rekognition-ryoishim'
+    bucket='ReplaceS3BucketName'
     collectionId='MyCollection'
 
     client=boto3.client('rekognition')

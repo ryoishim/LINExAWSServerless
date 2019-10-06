@@ -1,13 +1,9 @@
 #!/bin/bash
 
-echo "■環境構築------------------------------------"
-pip install --upgrade pip
-sudo yum -y update
-sudo yum -y install python27 # Installs Python 2.7.
-sudo yum -y install python36 # Installs Python 3.6.
-curl -O https://bootstrap.pypa.io/get-pip.py # Get the install script.
-sudo python get-pip.py                       # Install pip.
-rm get-pip.py                                # Delete the install script.
-sudo python -m pip install boto3
-echo "■githubから必要な資材を取得する------------------"
-git clone https://github.com/ryoishim/LINExAWSServerless.git
+echo -n "ユニークとなるバケット名を入力して下さい(ex: 20191106-ryoishim-handson):"
+read input
+sed -e "s/ReplaceS3BucketName/${input}/" ./03_create_bucket.py
+#sed -e "s/ReplaceS3BucketName/${input}/" ./04_upload_object.sh
+#sed -e "s/ReplaceS3BucketName/${input}/" ./05_index_faces.py
+#sed -e "s/ReplaceS3BucketName/${input}/" ./06_search_faces_by_image.py
+#sed -e "s/ReplaceS3BucketName/${input}/" ./function.py

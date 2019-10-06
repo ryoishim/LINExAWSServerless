@@ -2,7 +2,7 @@ import boto3
 
 if __name__ == "__main__":
 
-    BucketName='ryoishim-123456789'
+    BucketName='ReplaceS3BucketName'
 	
     client=boto3.client('s3')
 
