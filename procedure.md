@@ -117,9 +117,47 @@ LINE Messaging APIからのリクエストをhttpsで受け付け、Lambdaにプ
 
 ## ■ 6. LINE Messanging API設定
 
+### 6-1. LINE Developers側設定
+
 さて、ここまでくるとLINEとの統合を設定することができます。  
 下記サイトにアクセスして、右上の `ログイン` ボタンより、ご自身のLINE IDを使ってアカウント作成/ログインしてみましょう。
 https://developers.line.biz/ja/
+
+LINE Messaging APIは、プロバイダー作成 -> チャネル(ログイン/Messaging API/Clova)作成という流れで利用することができ、手順は非常に簡単です。  
+プロバイダー名には任意の名前を設定してください。
+
+<img src="./pr_image/line_1.png" width=50%><br>
+↓  
+<img src="./pr_image/line_2.png" width=50%><br>
+
+アプリ名：AWSSample(など任意の文字列)  
+アプリ説明：Rekognition Sample(など任意の文字列)  
+大業種/小業種、メールアドレスを入力し、規約に同意して先に進みましょう。
+  
+作成したチャネルを選択すると、チャネルの設定画面に進みます。  
+今回AWS上に作成した基盤と統合するためには、`チャネル基本設定` タブより、下記の3つを設定する必要があります。  
+
+* アクセストークン
+  * `再発行` ボタンより発行します。今回は有効期限に24時間を設定します。
+* Webhook送信 
+  * `編集` ボタン押下 -> `利用する` を選択 -> `更新` ボタンを押下 の順で設定します。
+* Webhook URL ※SSLのみ対応 
+  * 先ほどデプロイして発行されたAPIGatewayのURLを設定します。
+  * 設定後、 `接続確認` ボタンを押下し、正しく動作するか確認するとよいでしょう。
+
+<img src="./pr_image/line_3.png" width=50%><br>
+
+### 6-2. Lambda側設定
+
+これが最後の手順です。  
+Lambdaを認証/認可するため、LINE Developers側で発行したアクセストークンをLambda側に設定する必要があります。  
+先ほど作成したLambda Functionを開き、 `環境変数` ブロックを探してください。
+下記画像の通り、  
+変数名： `CHANNEL_ACCESS_TOKEN`  
+変数値： `Bearer <LINE Developer's Access Token>`  
+を設定してください。
+
+<img src="./pr_image/lambda_token.png" width=50%><br>
 
 ## ■ (optional) 7. RekognitionのAPIを使ってより拡張してみよう
 
