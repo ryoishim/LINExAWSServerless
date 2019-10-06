@@ -21,10 +21,9 @@ if __name__ == "__main__":
 
                                 
     faceMatches=response['FaceMatches']
-    print 'Matching faces'
+    print('Matching faces')
     for match in faceMatches:
-            print 'FileKey:' + match['Face']['ExternalImageId']
-            print 'FaceId:' + match['Face']['FaceId']
-            print 'Similarity: ' + "{:.2f}".format(match['Similarity']) + "%"
-            print
+            print('FileKey:' + match['Face']['ExternalImageId'])
+            print('FaceId:' + match['Face']['FaceId'])
+            print('Similarity: ' + "{:.2f}".format(match['Similarity']) + "%")
 
