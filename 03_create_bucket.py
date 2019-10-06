@@ -9,6 +9,7 @@ if __name__ == "__main__":
     #Create a bucket
     print('Creating bucket:' + BucketName)
     response=client.create_bucket(
+	ACL='public-read',
         Bucket=BucketName,
         CreateBucketConfiguration={
             'LocationConstraint': 'ap-northeast-1'
