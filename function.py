@@ -17,18 +17,18 @@ def lambda_handler(event, context):
     print("timestamp: " + str(timestamp))
     print("messageId: " + str(messageId))
 
-#    dynamoDB = boto3.resource("dynamodb")
-#    table = dynamoDB.Table("LINETable") # DynamoDBのテーブル名
-#
-#    # DynamoDBへのPut処理実行
-#    table.put_item(
-#      Item = {
-#        "timestamp": str(timestamp), # Partition Keyのデータ
-#        "message": jsonstr
-#      }
-#    )
+    dynamoDB = boto3.resource("dynamodb")
+    table = dynamoDB.Table("LINETable") # DynamoDBのテーブル名
 
-    # Image取得
+    # DynamoDBへのPut処理実行
+    table.put_item(
+      Item = {
+        "timestamp": str(timestamp),
+        "message": jsonstr
+      }
+    )
+
+    # LINE Message APIサーバから、送信されたImageを取得
     url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
     method = "GET"
     headers = {
@@ -39,7 +39,7 @@ def lambda_handler(event, context):
     with urllib.request.urlopen(request) as res:
         body = res.read()
     
-    # DetectFace
+    # 一致度判定
     client = boto3.client('rekognition')
     collectionId='MyCollection'
     threshold = 1
@@ -62,20 +62,12 @@ def lambda_handler(event, context):
 
     print(rek_message)
     
-    # 署名付きURL生成
-#    BUCKET = 'ReplaceS3BucketName'
+    # Reply用画像URL生成
     KEY = match['Face']['ExternalImageId']
- 
-#    s3 = boto3.client('s3')
-#    image_url = s3.generate_presigned_url(
-#      ClientMethod = 'get_object',
-#      Params = {'Bucket' : BUCKET, 'Key' : KEY},
-#      ExpiresIn = 3600,
-#      HttpMethod = 'GET')
     image_url='https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com/' + KEY
     print(image_url)
     
-    # Replay用リクエスト生成
+    # Reply用リクエスト生成
     url = "https://api.line.me/v2/bot/message/reply"
     method = "POST"
     headers = {
