@@ -183,7 +183,16 @@ Lambdaを認証/認可するため、LINE Developers側で発行したアクセ�
 
 <img src="./pr_image/lambda_token.png" width=50%><br>
 
-## ■ (optional) 7. RekognitionのAPIを使ってより拡張してみよう
+## ■ 7. 動作確認
+
+さて、LINE Developers上のQRコードからBotを友達登録して、実際に写真を投げてみましょう。  
+下記のような結果が得られたら成功です。  
+
+<img src="./pr_image/result.jpg" width=50%><br>
+
+周囲の参加者のみなさまと一緒に、写真を撮りあってみたりしてもいいかもしれませんね。
+
+## ■ (optional) 8. RekognitionのAPIを使ってより拡張してみよう
 
 今回は事前に用意されたデータセットに対する偉人判定を実施しましたが、  
 Rekognitionには他にも様々な機能が搭載されています。  
