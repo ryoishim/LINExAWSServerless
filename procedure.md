@@ -115,12 +115,35 @@ AWSでは、IAMロールを使って実現することができます。
 LINE Messaging APIからのリクエストをhttpsで受け付け、LambdaにプロキシするためのGatewayが必要となります。  
 今回は、シンプルなPUTメソッドをもつAPIgatewayを作成します。
 
+### 5-1. APIGateway作成
+
+作成の流れは、 `API` -> `リソース(/sendimage/)` -> `メソッド(POST)` -> `デプロイ` となります。  
+下記の手順に沿って作業してみましょう。
+
+<img src="./pr_image/apigw_1.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_2.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_3.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_4.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_5.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_6.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_7.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_8.png" width=50%><br>
+↓  
+<img src="./pr_image/apigw_9.png" width=50%><br>
+
 ## ■ 6. LINE Messanging API設定
 
 ### 6-1. LINE Developers側設定
 
 さて、ここまでくるとLINEとの統合を設定することができます。  
-下記サイトにアクセスして、右上の `ログイン` ボタンより、ご自身のLINE IDを使ってアカウント作成/ログインしてみましょう。
+下記サイトにアクセスして、右上の `ログイン` ボタンより、ご自身のLINE IDを使ってアカウント作成/ログインしてみましょう。  
 https://developers.line.biz/ja/
 
 LINE Messaging APIは、プロバイダー作成 -> チャネル(ログイン/Messaging API/Clova)作成という流れで利用することができ、手順は非常に簡単です。  
