@@ -166,6 +166,7 @@ LINE Messaging APIは、プロバイダー作成 -> チャネル(ログイン/Me
   * `編集` ボタン押下 -> `利用する` を選択 -> `更新` ボタンを押下 の順で設定します。
 * Webhook URL ※SSLのみ対応 
   * 先ほどデプロイして発行されたAPIGatewayのURLを設定します。
+    * ex: https://xxxxxxx.execute-api.ap-northeast-1.amazonaws.com/dev/sendimage
   * 設定後、 `接続確認` ボタンを押下し、正しく動作するか確認するとよいでしょう。
 
 <img src="./pr_image/line_3.png" width=50%><br>
