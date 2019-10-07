@@ -169,7 +169,7 @@ LINE Messaging APIは、プロバイダー作成 -> チャネル(ログイン/Me
 * `応答メッセージ` : オフ
 * `Webhook` : オン
 
-<img src="./pr_image/line_3.png" width=50%><br>
+<img src="./pr_image/line_bot.png" width=50%><br>
 
 ### 6-2. トークン設定
 
