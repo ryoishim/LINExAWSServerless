@@ -2,31 +2,31 @@ import boto3, json
 import urllib
 import re
 import os
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 from datetime import datetime
 
-print('Loading function')      # Functionのロードをログに出力
+logger.info('Loading function')      # Functionのロードをログに出力
+
+
+# 定数を定義
+dynamoDBClient = boto3.resource("dynamodb")
+rekognitionClient = boto3.client('rekognition')
+rekThreshold = 1
+rekMaxFaces = 1
+rekCollectionId = 'MyCollection'
 
 def lambda_handler(event, context):
     # 文字列へ変換
     jsonstr = json.dumps(event, indent=2)
-    print("Received event: " + jsonstr)
+    logger.info("Received event: " + jsonstr)
 
     timestamp = event['events'][0]['timestamp']
     messageId = event['events'][0]['message']['id']
-    print("timestamp: " + str(timestamp))
-    print("messageId: " + str(messageId))
-
-    dynamoDB = boto3.resource("dynamodb")
-    table = dynamoDB.Table("LINETable") # DynamoDBのテーブル名
-
-    # DynamoDBへのPut処理実行
-    table.put_item(
-      Item = {
-        "timestamp": str(timestamp),
-        "message": jsonstr
-      }
-    )
+    logger.info("timestamp: " + str(timestamp))
+    logger.info("messageId: " + str(messageId))
 
     # LINE Message APIサーバから、送信されたImageを取得
     url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
@@ -40,32 +40,28 @@ def lambda_handler(event, context):
         body = res.read()
     
     # 一致度判定
-    client = boto3.client('rekognition')
-    collectionId='MyCollection'
-    threshold = 1
-    maxFaces = 1
-    response=client.search_faces_by_image(
-        CollectionId=collectionId,
+    response=rekognitionClient.search_faces_by_image(
+        CollectionId=rekCollectionId,
         Image={
             'Bytes': body,
         },
-        FaceMatchThreshold=threshold,
-        MaxFaces=maxFaces
+        FaceMatchThreshold=rekThreshold,
+        MaxFaces=rekMaxFaces
     )
                                 
     faceMatches=response['FaceMatches']
-    print('Matching faces')
+    logger.info('Matching faces')
     rek_message = ''
 
     for match in faceMatches:
         rek_message += '一致度は' + "{:.2f}".format(match['Similarity']) + '%でした！'
 
-    print(rek_message)
+    logger.info(rek_message)
     
     # Reply用画像URL生成
     KEY = match['Face']['ExternalImageId']
     image_url='https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com/' + KEY
-    print(image_url)
+    logger.info(image_url)
     
     # Reply用リクエスト生成
     url = "https://api.line.me/v2/bot/message/reply"
