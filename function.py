@@ -3,6 +3,11 @@ import urllib
 import re
 import os
 import logging
+import base64
+import hashlib
+import hmac
+
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -27,6 +32,13 @@ def lambda_handler(event, context):
     messageId = event['events'][0]['message']['id']
     logger.info("timestamp: " + str(timestamp))
     logger.info("messageId: " + str(messageId))
+
+    # 署名検証を行う
+    hash = hmac.new(channelSecret.encode('utf-8'),
+        str(event['body-json']['events'][0]).encode('utf-8'), hashlib.sha256).digest()
+    signature = base64.b64encode(hash)
+    logger.info("Line-Signature: " + event['params']['header']['X-Line-Signature'])
+    logger.info("Body-Signature: " + str(signature))
 
     # LINE Message APIサーバから、送信されたImageを取得
     url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
