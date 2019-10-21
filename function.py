@@ -13,18 +13,19 @@ logger.setLevel(logging.INFO)
 
 from datetime import datetime
 
-logger.info('Loading function')      # Functionのロードをログに出力
+logger.info('Loading function')
 
 
-# 定数を定義
+## def Const var
 dynamoDBClient = boto3.resource("dynamodb")
 rekognitionClient = boto3.client('rekognition')
 rekThreshold = 1
 rekMaxFaces = 1
 rekCollectionId = 'MyCollection'
+channelSecret = os.environ['CHANNEL_ACCESS_TOKEN']
 
 def lambda_handler(event, context):
-    # 文字列へ変換
+
     jsonstr = json.dumps(event, indent=2)
     logger.info("Received event: " + jsonstr)
 
@@ -33,7 +34,7 @@ def lambda_handler(event, context):
     logger.info("timestamp: " + str(timestamp))
     logger.info("messageId: " + str(messageId))
 
-    # 署名検証を行う
+    # SignatureVerification
     hash = hmac.new(channelSecret.encode('utf-8'),
         str(event['body-json']['events'][0]).encode('utf-8'), hashlib.sha256).digest()
     signature = base64.b64encode(hash)
@@ -44,7 +45,7 @@ def lambda_handler(event, context):
     url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
     method = "GET"
     headers = {
-        'Authorization': os.environ['CHANNEL_ACCESS_TOKEN'],
+        'Authorization': channelSecret,
         'Content-Type': 'application/json'
     }
     request = urllib.request.Request(url, method=method, headers=headers)
@@ -79,7 +80,7 @@ def lambda_handler(event, context):
     url = "https://api.line.me/v2/bot/message/reply"
     method = "POST"
     headers = {
-        'Authorization': os.environ['CHANNEL_ACCESS_TOKEN'],
+        'Authorization': channelSecret,
         'Content-Type': 'application/json'
     }
     message = [
