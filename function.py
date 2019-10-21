@@ -1,12 +1,9 @@
 import boto3, json
 import urllib
+import sys
 import re
 import os
 import logging
-import base64
-import hashlib
-import hmac
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -15,31 +12,43 @@ from datetime import datetime
 
 logger.info('Loading function')
 
-
 ## def Const var
-dynamoDBClient = boto3.resource("dynamodb")
 rekognitionClient = boto3.client('rekognition')
 rekThreshold = 1
 rekMaxFaces = 1
 rekCollectionId = 'MyCollection'
 channelSecret = os.environ['CHANNEL_ACCESS_TOKEN']
 
+def isJsonFormat(line):
+    try:
+        json.loads(line)
+    except json.JSONDecodeError as e:
+        print(sys.exc_info())
+        print(e)
+        return False
+    # 以下の例外でも捕まえるので注意
+    except ValueError as e:
+        print(sys.exc_info())
+        print(e)
+        return False
+    except Exception as e:
+        print(sys.exc_info())
+        print(e)
+        return False
+    return True
+
 def lambda_handler(event, context):
 
     jsonstr = json.dumps(event, indent=2)
     logger.info("Received event: " + jsonstr)
 
-    timestamp = event['events'][0]['timestamp']
-    messageId = event['events'][0]['message']['id']
+    body = json.loads(event['Records'][0]['body'])
+    timestamp = body['timestamp']
+    messageId = body['message']['id']
+    replyToken = body['replyToken']
     logger.info("timestamp: " + str(timestamp))
     logger.info("messageId: " + str(messageId))
-
-    # SignatureVerification
-    hash = hmac.new(channelSecret.encode('utf-8'),
-        str(event['body-json']['events'][0]).encode('utf-8'), hashlib.sha256).digest()
-    signature = base64.b64encode(hash)
-    logger.info("Line-Signature: " + event['params']['header']['X-Line-Signature'])
-    logger.info("Body-Signature: " + str(signature))
+    logger.info("replytoken: " + str(replyToken))
 
     # LINE Message APIサーバから、送信されたImageを取得
     url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
@@ -100,10 +109,10 @@ def lambda_handler(event, context):
       }
     ]
     params = {
-        "replyToken": event['events'][0]['replyToken'],
+        "replyToken": replyToken,
         "messages": message
     }
     request = urllib.request.Request(url, json.dumps(params).encode("utf-8"), method=method, headers=headers)
     with urllib.request.urlopen(request) as res:
         body = res.read()
-    return 0    
+    return 0   
