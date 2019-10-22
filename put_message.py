@@ -10,9 +10,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.info("Loading function")
 
-sqsClient = boto3.resource("sqs")
-queue = sqsClient.get_queue_by_name(QueueName="LINEMessage")
-channelSecret = os.environ["CHANNEL_ACCESS_TOKEN"]
+sqs_client = boto3.resource("sqs")
+queue = sqs_client.get_queue_by_name(QueueName="LINEMessage")
+channel_secret = os.environ["CHANNEL_ACCESS_TOKEN"]
 
 
 def is_image_type_message(message, timestamp):
@@ -32,11 +32,11 @@ def is_image_type_message(message, timestamp):
 def check_signature(event):
     # SignatureVerification
     text = str(event["body-json"])
-    xlinesignature = event["params"]["header"]["X-Line-Signature"]
-    hash = hmac.new(channelSecret.encode("utf-8"),
+    x_line_signature = event["params"]["header"]["X-Line-Signature"]
+    hash = hmac.new(channel_secret.encode("utf-8"),
                     text.encode("utf-8"), hashlib.sha256).digest()
     signature = base64.b64encode(hash)
-    logger.info(f"Line-Signature: {xlinesignature}")
+    logger.info(f"Line-Signature: {x_line_signature}")
     logger.info(f"Body-Signature: {signature}")
 
 
