@@ -97,7 +97,10 @@ def lambda_handler(event, context):
     logger.info(f"messageId: {messageId}")
     logger.info(f"replytoken: {replyToken}")
 
+    # Messaging APIサーバから画像取得
     image_body = get_image(messageId)
+
+    # 画像一致度取得
     rek_dict = get_face_match(image_body)
     logger.info(str(rek_dict))
 
