@@ -47,7 +47,7 @@ def get_face_match(body):
     for match in faceMatches:
         score = match["Similarity"]
         rek_message = f"一致度は{score:.2f}%でした！"
-        rek_image_key = ["Face"]["ExternalImageId"]
+        rek_image_key = match["Face"]["ExternalImageId"]
         return {"rek_message": rek_message, "rek_image_key": rek_image_key}
 
 def create_reply_request(replyToken, rek_message, image_url):
