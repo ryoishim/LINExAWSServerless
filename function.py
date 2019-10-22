@@ -9,19 +9,19 @@ import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logger.info('Loading function')
+logger.info("Loading function")
 
-rekognitionClient = boto3.client('rekognition')
+rekognitionClient = boto3.client("rekognition")
 rekThreshold = 1
 rekMaxFaces = 1
-rekCollectionId = 'MyCollection'
-channelSecret = os.environ['CHANNEL_ACCESS_TOKEN']
+rekCollectionId = "MyCollection"
+channelSecret = os.environ["CHANNEL_ACCESS_TOKEN"]
 LINE_BASE_URL = "https://api.line.me/v2/bot/message"
 REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com"
 
 def get_image(message_id):
     """LINE Message APIサーバから、送信されたImageを取得"""
-    url = f'{LINE_BASE_URL}/{message_id}/content'
+    url = f"{LINE_BASE_URL}/{message_id}/content"
     headers = {
         "Authorization": channelSecret,
         "Content-Type": "application/json"
@@ -41,18 +41,18 @@ def get_face_match(body):
         MaxFaces=rekMaxFaces
     )
 
-    faceMatches = response['FaceMatches']
-    logger.info('Matching faces')
+    faceMatches = response["FaceMatches"]
+    logger.info("Matching faces")
 
     for match in faceMatches:
-        score = match['Similarity']
-        rek_message = f'一致度は{score:.2f}%でした！'
-        rek_image_key = ['Face']['ExternalImageId']
+        score = match["Similarity"]
+        rek_message = f"一致度は{score:.2f}%でした！"
+        rek_image_key = ["Face"]["ExternalImageId"]
         return {"rek_message": rek_message, "rek_image_key": rek_image_key}
 
 def create_reply_request(replyToken, rek_message, image_url):
     """Reply用リクエスト生成"""
-    url = f'{LINE_BASE_URL}/reply'
+    url = f"{LINE_BASE_URL}/reply"
     method = "POST"
     headers = {
         "Authorization": channelSecret,
@@ -106,28 +106,28 @@ def lambda_handler(event, context):
         FaceMatchThreshold=rekThreshold,
         MaxFaces=rekMaxFaces
     )
-    faceMatches = response['FaceMatches']
-    logger.info('Matching faces')
+    faceMatches = response["FaceMatches"]
+    logger.info("Matching faces")
 
     for match in faceMatches:
-        score = match['Similarity']
-        rek_message = f'一致度は{score:.2f}%でした！'
-        rek_image_key = match['Face']['ExternalImageId']
+        score = match["Similarity"]
+        rek_message = f"一致度は{score:.2f}%でした！"
+        rek_image_key = match["Face"]["ExternalImageId"]
         rek_dict = {"rek_message": rek_message, "rek_image_key": rek_image_key}
     
     logger.info(str(rek_dict))
     
     # Reply用画像URL生成
-    image_key = rek_dict['rek_image_key']
-    image_url = f'{REPLY_URL}/{image_key}'
+    image_key = rek_dict["rek_image_key"]
+    image_url = f"{REPLY_URL}/{image_key}"
     logger.info(image_url)
     
     # Reply用リクエスト生成
-    request_dict = create_reply_request(replyToken, rek_dict['rek_message'], image_url)
+    request_dict = create_reply_request(replyToken, rek_dict["rek_message"], image_url)
     logger.info(str(request_dict))
 
-    request = urllib.request.Request(url=request_dict['url'], data=json.dumps(
-        request_dict['params']).encode('utf-8'), method=request_dict['method'], headers=request_dict['header'])
+    request = urllib.request.Request(url=request_dict["url"], data=json.dumps(
+        request_dict["params"]).encode("utf-8"), method=request_dict["method"], headers=request_dict["header"])
 
     with urllib.request.urlopen(request) as res:
         body = res.read()
