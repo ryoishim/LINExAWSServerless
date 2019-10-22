@@ -20,7 +20,7 @@ LINE_BASE_URL = "https://api.line.me/v2/bot/message"
 REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com"
 
 def get_image(message_id):
-    # LINE Message APIサーバから、送信されたImageを取得
+    """LINE Message APIサーバから、送信されたImageを取得"""
     url = f'{LINE_BASE_URL}/{message_id}/content'
     headers = {
         "Authorization": channelSecret,
@@ -35,7 +35,7 @@ def get_face_match(body):
     response = rekognitionClient.search_faces_by_image(
         CollectionId=rekCollectionId,
         Image={
-            "Bytes": body.encode('UTF-8'),
+            "Bytes": body,
         },
         FaceMatchThreshold=rekThreshold,
         MaxFaces=rekMaxFaces
@@ -51,7 +51,7 @@ def get_face_match(body):
         return {"rek_message": rek_message, "rek_image_key": rek_image_key}
 
 def create_reply_request(replyToken, rek_message, image_url):
-    # Reply用リクエスト生成
+    """Reply用リクエスト生成"""
     url = f'{LINE_BASE_URL}/reply'
     method = "POST"
     headers = {
@@ -96,6 +96,7 @@ def lambda_handler(event, context):
     image_body = get_image(messageId)
     # TODO: bytes型の取り回し、こう修正したい
     # rek_dict = get_face_match(image_body)
+    
     # 一致度判定
     response = rekognitionClient.search_faces_by_image(
         CollectionId=rekCollectionId,
