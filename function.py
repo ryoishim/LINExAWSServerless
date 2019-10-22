@@ -14,22 +14,18 @@ logger.info('Loading function')
 rekognitionClient = boto3.client('rekognition')
 rekThreshold = 1
 rekMaxFaces = 1
-rekCollectionId = "MyCollection"
+rekCollectionId = 'MyCollection'
 channelSecret = os.environ['CHANNEL_ACCESS_TOKEN']
 LINE_BASE_URL = "https://api.line.me/v2/bot/message"
-REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com/"
+REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com"
 
 def get_image(message_id):
     # LINE Message APIサーバから、送信されたImageを取得
-    # QUESTION: strキャストは必要？
     url = f'{LINE_BASE_URL}/{message_id}/content'
     headers = {
         "Authorization": channelSecret,
         "Content-Type": "application/json"
     }
-    # NOTE: requestsならrequests.get(url)でシンプルに書ける
-    # ↑ 見通しが良い & method変数を無くせる
-    # そもそも使い回さないならmethod="GET"で良いと思う
     request = urllib.request.Request(url, method="GET", headers=headers)
     with urllib.request.urlopen(request) as res:
         return res.read()
@@ -50,7 +46,6 @@ def get_face_match(body):
 
     for match in faceMatches:
         score = match['Similarity']
-        # QUESTION: 複数一致する？→するなら文章修正, しないなら下記でreturnでOK
         rek_message = f'一致度は{score:.2f}%でした！'
         rek_image_key = ['Face']['ExternalImageId']
         return {"rek_message": rek_message, "rek_image_key": rek_image_key}
