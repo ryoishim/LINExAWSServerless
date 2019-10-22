@@ -129,7 +129,8 @@ def lambda_handler(event, context):
     logger.info(str(request_dict))
 
     request = urllib.request.Request(url=request_dict["url"], data=json.dumps(
-        request_dict["params"]).encode("utf-8"), method=request_dict["method"], headers=request_dict["header"])
+        request_dict["params"]).encode("utf-8"),
+        method=request_dict["method"], headers=request_dict["header"])
 
     with urllib.request.urlopen(request) as res:
         body = res.read()
