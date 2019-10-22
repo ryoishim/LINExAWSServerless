@@ -1,8 +1,5 @@
-from datetime import datetime
 import boto3
 import json
-import urllib
-import re
 import os
 import logging
 import base64
@@ -17,6 +14,7 @@ sqsClient = boto3.resource("sqs")
 queue = sqsClient.get_queue_by_name(QueueName="LINEMessage")
 channelSecret = os.environ["CHANNEL_ACCESS_TOKEN"]
 
+
 def is_image_type_message(message, timestamp):
     timestamp = timestamp
     m_id = message["id"]
@@ -30,6 +28,7 @@ def is_image_type_message(message, timestamp):
         logger.info("MessageType is NOT image.")
         return False
 
+
 def check_signature(event):
     # SignatureVerification
     text = str(event["body-json"])
@@ -39,6 +38,7 @@ def check_signature(event):
     signature = base64.b64encode(hash)
     logger.info(f"Line-Signature: {xlinesignature}")
     logger.info(f"Body-Signature: {signature}")
+
 
 def lambda_handler(event, context):
 
@@ -52,4 +52,4 @@ def lambda_handler(event, context):
         if is_image_type_message(e["message"], e["timestamp"]):
             queue.send_message(MessageBody=json.dumps(e))
 
-    return 0 
+    return 0

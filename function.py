@@ -1,9 +1,6 @@
-from datetime import datetime
 import boto3
 import json
 import urllib
-import sys
-import re
 import os
 import logging
 
@@ -19,8 +16,10 @@ channelSecret = os.environ["CHANNEL_ACCESS_TOKEN"]
 LINE_BASE_URL = "https://api.line.me/v2/bot/message"
 REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com"
 
+
 def get_image(message_id):
     """LINE Message APIサーバから、送信されたImageを取得"""
+
     url = f"{LINE_BASE_URL}/{message_id}/content"
     headers = {
         "Authorization": channelSecret,
@@ -30,8 +29,10 @@ def get_image(message_id):
     with urllib.request.urlopen(request) as res:
         return res.read()
 
+
 def get_face_match(body):
     """一致度判定"""
+
     response = rekognitionClient.search_faces_by_image(
         CollectionId=rekCollectionId,
         Image={
@@ -50,8 +51,10 @@ def get_face_match(body):
         rek_image_key = match["Face"]["ExternalImageId"]
         return {"rek_message": rek_message, "rek_image_key": rek_image_key}
 
+
 def create_reply_request(replyToken, rek_message, image_url):
     """Reply用リクエスト生成"""
+
     url = f"{LINE_BASE_URL}/reply"
     method = "POST"
     headers = {
@@ -80,6 +83,7 @@ def create_reply_request(replyToken, rek_message, image_url):
     }
     return {"url": url, "header": headers, "body": message, "params": params, "method": method}
 
+
 def lambda_handler(event, context):
 
     jsonstr = json.dumps(event, indent=2)
@@ -96,7 +100,6 @@ def lambda_handler(event, context):
     image_body = get_image(messageId)
     # TODO: bytes型の取り回し、こう修正したい
     # rek_dict = get_face_match(image_body)
-    
     # 一致度判定
     response = rekognitionClient.search_faces_by_image(
         CollectionId=rekCollectionId,
@@ -114,14 +117,13 @@ def lambda_handler(event, context):
         rek_message = f"一致度は{score:.2f}%でした！"
         rek_image_key = match["Face"]["ExternalImageId"]
         rek_dict = {"rek_message": rek_message, "rek_image_key": rek_image_key}
-    
     logger.info(str(rek_dict))
-    
+
     # Reply用画像URL生成
     image_key = rek_dict["rek_image_key"]
     image_url = f"{REPLY_URL}/{image_key}"
     logger.info(image_url)
-    
+
     # Reply用リクエスト生成
     request_dict = create_reply_request(replyToken, rek_dict["rek_message"], image_url)
     logger.info(str(request_dict))
@@ -131,6 +133,6 @@ def lambda_handler(event, context):
 
     with urllib.request.urlopen(request) as res:
         body = res.read()
-    
+
     # TODO: 適切な戻り値判定
-    return 0   
+    return 0
