@@ -98,25 +98,7 @@ def lambda_handler(event, context):
     logger.info(f"replytoken: {replyToken}")
 
     image_body = get_image(messageId)
-    # TODO: bytes型の取り回し、こう修正したい
-    # rek_dict = get_face_match(image_body)
-    # 一致度判定
-    response = rekognitionClient.search_faces_by_image(
-        CollectionId=rekCollectionId,
-        Image={
-            "Bytes": image_body,
-        },
-        FaceMatchThreshold=rekThreshold,
-        MaxFaces=rekMaxFaces
-    )
-    faceMatches = response["FaceMatches"]
-    logger.info("Matching faces")
-
-    for match in faceMatches:
-        score = match["Similarity"]
-        rek_message = f"一致度は{score:.2f}%でした！"
-        rek_image_key = match["Face"]["ExternalImageId"]
-        rek_dict = {"rek_message": rek_message, "rek_image_key": rek_image_key}
+    rek_dict = get_face_match(image_body)
     logger.info(str(rek_dict))
 
     # Reply用画像URL生成
