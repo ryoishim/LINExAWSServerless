@@ -23,7 +23,7 @@ def is_image_type_message(message, timestamp):
     m_type = message['type']
     logger.info(f'timestamp: {timestamp}')
     logger.info(f'message_id: {m_id}')
-    if (m_id == 'image'):
+    if (m_type == 'image'):
         logger.info('Send message to SQS because MessageType is image.')
         return True
     else:
