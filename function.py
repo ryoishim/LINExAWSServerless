@@ -1,4 +1,6 @@
-import boto3, json
+from datetime import datetime
+import boto3
+import json
 import urllib
 import sys
 import re
@@ -7,112 +9,132 @@ import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-from datetime import datetime
-
 logger.info('Loading function')
 
-## def Const var
 rekognitionClient = boto3.client('rekognition')
 rekThreshold = 1
 rekMaxFaces = 1
-rekCollectionId = 'MyCollection'
+rekCollectionId = "MyCollection"
 channelSecret = os.environ['CHANNEL_ACCESS_TOKEN']
+LINE_BASE_URL = "https://api.line.me/v2/bot/message"
+REPLY_URL = "https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com/"
 
-def isJsonFormat(line):
-    try:
-        json.loads(line)
-    except json.JSONDecodeError as e:
-        print(sys.exc_info())
-        print(e)
-        return False
-    # 以下の例外でも捕まえるので注意
-    except ValueError as e:
-        print(sys.exc_info())
-        print(e)
-        return False
-    except Exception as e:
-        print(sys.exc_info())
-        print(e)
-        return False
-    return True
+def get_image(message_id):
+    # LINE Message APIサーバから、送信されたImageを取得
+    # QUESTION: strキャストは必要？
+    url = f'{LINE_BASE_URL}/{message_id}/content'
+    headers = {
+        "Authorization": channelSecret,
+        "Content-Type": "application/json"
+    }
+    # NOTE: requestsならrequests.get(url)でシンプルに書ける
+    # ↑ 見通しが良い & method変数を無くせる
+    # そもそも使い回さないならmethod="GET"で良いと思う
+    request = urllib.request.Request(url, method="GET", headers=headers)
+    with urllib.request.urlopen(request) as res:
+        return res.read()
+
+def get_face_match(body):
+    """一致度判定"""
+    response = rekognitionClient.search_faces_by_image(
+        CollectionId=rekCollectionId,
+        Image={
+            "Bytes": body.encode('UTF-8'),
+        },
+        FaceMatchThreshold=rekThreshold,
+        MaxFaces=rekMaxFaces
+    )
+
+    faceMatches = response['FaceMatches']
+    logger.info('Matching faces')
+
+    for match in faceMatches:
+        score = match['Similarity']
+        # QUESTION: 複数一致する？→するなら文章修正, しないなら下記でreturnでOK
+        rek_message = f'一致度は{score:.2f}%でした！'
+        rek_image_key = ['Face']['ExternalImageId']
+        return {"rek_message": rek_message, "rek_image_key": rek_image_key}
+
+def create_reply_request(replyToken, rek_message, image_url):
+    # Reply用リクエスト生成
+    url = f'{LINE_BASE_URL}/reply'
+    method = "POST"
+    headers = {
+        "Authorization": channelSecret,
+        "Content-Type": "application/json"
+    }
+    message = [
+        {
+            "type": "text",
+            "text": "偉人との一致度を判定しました！\n判定結果は、、、、"
+        },
+        {
+            "type": "image",
+            "originalContentUrl": image_url,
+            "previewImageUrl": image_url
+
+        },
+        {
+            "type": "text",
+            "text": str(rek_message)
+        }
+    ]
+    params = {
+        "replyToken": replyToken,
+        "messages": message
+    }
+    return {"url": url, "header": headers, "body": message, "params": params, "method": method}
 
 def lambda_handler(event, context):
 
     jsonstr = json.dumps(event, indent=2)
     logger.info("Received event: " + jsonstr)
 
-    body = json.loads(event['Records'][0]['body'])
-    timestamp = body['timestamp']
-    messageId = body['message']['id']
-    replyToken = body['replyToken']
-    logger.info("timestamp: " + str(timestamp))
-    logger.info("messageId: " + str(messageId))
-    logger.info("replytoken: " + str(replyToken))
+    body = json.loads(event["Records"][0]["body"])
+    timestamp = body["timestamp"]
+    messageId = body["message"]["id"]
+    replyToken = body["replyToken"]
+    logger.info(f"timestamp: {timestamp}")
+    logger.info(f"messageId: {messageId}")
+    logger.info(f"replytoken: {replyToken}")
 
-    # LINE Message APIサーバから、送信されたImageを取得
-    url = "https://api.line.me/v2/bot/message/"+str(messageId)+"/content"
-    method = "GET"
-    headers = {
-        'Authorization': channelSecret,
-        'Content-Type': 'application/json'
-    }
-    request = urllib.request.Request(url, method=method, headers=headers)
-    with urllib.request.urlopen(request) as res:
-        body = res.read()
-    
+    image_body = get_image(messageId)
+    # TODO: bytes型の取り回し、こう修正したい
+    # rek_dict = get_face_match(image_body)
     # 一致度判定
-    response=rekognitionClient.search_faces_by_image(
+    response = rekognitionClient.search_faces_by_image(
         CollectionId=rekCollectionId,
         Image={
-            'Bytes': body,
+            "Bytes": image_body,
         },
         FaceMatchThreshold=rekThreshold,
         MaxFaces=rekMaxFaces
     )
-                                
-    faceMatches=response['FaceMatches']
+    faceMatches = response['FaceMatches']
     logger.info('Matching faces')
-    rek_message = ''
 
     for match in faceMatches:
-        rek_message += '一致度は' + "{:.2f}".format(match['Similarity']) + '%でした！'
-
-    logger.info(rek_message)
+        score = match['Similarity']
+        rek_message = f'一致度は{score:.2f}%でした！'
+        rek_image_key = match['Face']['ExternalImageId']
+        rek_dict = {"rek_message": rek_message, "rek_image_key": rek_image_key}
+    
+    logger.info(str(rek_dict))
     
     # Reply用画像URL生成
-    KEY = match['Face']['ExternalImageId']
-    image_url='https://ReplaceS3BucketName.s3-ap-northeast-1.amazonaws.com/' + KEY
+    image_key = rek_dict['rek_image_key']
+    image_url = f'{REPLY_URL}/{image_key}'
     logger.info(image_url)
     
     # Reply用リクエスト生成
-    url = "https://api.line.me/v2/bot/message/reply"
-    method = "POST"
-    headers = {
-        'Authorization': channelSecret,
-        'Content-Type': 'application/json'
-    }
-    message = [
-      {
-        'type': 'text',
-        'text': '偉人との一致度を判定しました！\n判定結果は、、、、'
-      },
-      {
-        'type': 'image',
-        'originalContentUrl': image_url,
-        'previewImageUrl': image_url
-        
-      },
-      {
-        'type': 'text',
-        'text': str(rek_message)
-      }
-    ]
-    params = {
-        "replyToken": replyToken,
-        "messages": message
-    }
-    request = urllib.request.Request(url, json.dumps(params).encode("utf-8"), method=method, headers=headers)
+    request_dict = create_reply_request(replyToken, rek_dict['rek_message'], image_url)
+    logger.info(str(request_dict))
+
+    request = urllib.request.Request(url=request_dict['url'], data=json.dumps(
+        request_dict['params']).encode('utf-8'), method=request_dict['method'], headers=request_dict['header'])
+
     with urllib.request.urlopen(request) as res:
         body = res.read()
+    
+    # TODO: 適切な戻り値判定
     return 0   
