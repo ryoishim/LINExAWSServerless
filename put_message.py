@@ -31,7 +31,6 @@ def is_image_type_message(message, timestamp):
         return False
 
 def check_signature(event):
-    # SignatureVerification
     text = str(event['body-json'])
     xlinesignature = event['params']['header']['X-Line-Signature']
     hash = hmac.new(channelSecret.encode('utf-8'),
