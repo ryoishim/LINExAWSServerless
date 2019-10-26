@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "9eb8c465-c5eb-4d57-b6fa-80ffb72a2d50",
+      "receiptHandle": "AQEBnRybnHwUqQlXysJ/aaaaaaaaaaaaaaaaaaaaaaaaaaaaa+bbbbbbbbbbbbbbb+4w81MYyIOBo6Br2ZR/8Muql03ntBLWZyaXclqSebMLxQOn4GiZcB728k2/ZdKn5zmjX8MQDfmKYVk5v1cmT7CkCIs30UDVGx7YFDgAPZPC5w3w4llFI77Jv7efCKEKNBjR9ojdfls8ZtyWukutyhK0bSNFvpvHwQS5tHdBmOcD7HIRIdtnY91mltVq6fcM6DYSPVUGt+vDPEkIB5IqODsLCtchwdtlxZG+ay/iasb3C6JoaqGx0pKcP6djw6cx2tJRfif+9o8ud3U7b/nGDrP5JZIz2LkLcMRgieWqNT+FT6yL4/H9sCsnA5ELyAAWAGaQ==",
+      "body": "{\"type\": \"message\", \"replyToken\": \"ed0c89f6879b4658a71ee45ede4186d5\", \"source\": {\"userId\": \"U944722e9e098765435678be82b1153\", \"type\": \"user\"}, \"timestamp\": 1571649952645, \"message\": {\"type\": \"image\", \"id\": \"10779212874282\", \"contentProvider\": {\"type\": \"line\"}}}",
+      "attributes": {
+        "ApproximateReceiveCount": "24",
+        "SentTimestamp": "1571649953097",
+        "SenderId": "AROATEIJVX4NI3BECQMPN:LINEsample",
+        "ApproximateFirstReceiveTimestamp": "1571649953097"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "aa656454b5a50123456a38dc80c7523b",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:ap-northeast-1:123456789012:LINEMessage",
+      "awsRegion": "ap-northeast-1"
+    }
+  ]
+}
