@@ -46,10 +46,21 @@ def lambda_handler(event, context):
     logger.info(f"Received event:: {jsonstr}")
 
     # SignatureVerification
-    check_signature(event)
-
-    for e in event["body-json"]["events"]:
+    # check_signature(event)
+    events_json = json.loads(event["body"])
+    for e in events_json["events"]:
         if is_image_type_message(e["message"], e["timestamp"]):
             queue.send_message(MessageBody=json.dumps(e))
 
-    return 0
+    body = {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "title" : "Empty Schema",
+      "type" : "object"
+    }
+    
+    response = {
+        'body': str(body),
+        'statusCode': 200
+    }
+
+    return response
