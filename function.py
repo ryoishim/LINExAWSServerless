@@ -120,5 +120,4 @@ def lambda_handler(event, context):
     with urllib.request.urlopen(request) as res:
         body = res.read()
 
-    # TODO: 適切な戻り値判定
     return 0
