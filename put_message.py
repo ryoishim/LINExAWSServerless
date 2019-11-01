@@ -12,7 +12,7 @@ logger.info("Loading function")
 
 sqs_client = boto3.resource("sqs")
 queue = sqs_client.get_queue_by_name(QueueName="LINEMessage")
-channel_secret = os.environ["CHANNEL_ACCESS_TOKEN"]
+channel_secret = os.environ["CHANNEL_SECRET"]
 
 
 def is_image_type_message(message, timestamp):
@@ -32,7 +32,10 @@ def is_image_type_message(message, timestamp):
 def check_signature(event, x_line_signature):
     # SignatureVerification
     text = str(event)
-    logger.info(f"Request-Body: {text}")
+    logger.info(f"Request-Body(event): {event}")
+    logger.info(f"Request-Body(text): {text}")
+    logger.info(f"event-type: {type(event)}")
+    logger.info(f"text-type : {type(text)}")
 
     hash = hmac.new(channel_secret.encode("utf-8"),
                     text.encode("utf-8"), hashlib.sha256).digest()
@@ -45,11 +48,13 @@ def lambda_handler(event, context):
 
     jsonstr = json.dumps(event, indent=2)
     logger.info(f"Received event:: {jsonstr}")
+    body_json = event["body"]
     events_json = json.loads(event["body"])
+    
     x_line_signature = event["headers"]["X-Line-Signature"]
 
     # SignatureVerification
-    check_signature(events_json, x_line_signature)
+    check_signature(body_json, x_line_signature)
 
     for e in events_json["events"]:
         if is_image_type_message(e["message"], e["timestamp"]):
