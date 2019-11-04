@@ -12,7 +12,7 @@ if __name__ == "__main__":
     s3client=boto3.client('s3')
     response = s3client.list_objects(
         Bucket=bucket,
-        Prefix='mig'
+        Prefix='img'
     )
 
     if 'Contents' in response:
