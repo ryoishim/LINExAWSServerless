@@ -43,6 +43,11 @@ def check_signature(event, x_line_signature):
     logger.info(f"Line-Signature: {x_line_signature}")
     logger.info(f"Body-Signature: {signature}")
 
+    if x_line_signature.encode('utf-8') == signature:
+        return True
+    else:
+        return False
+
 
 def lambda_handler(event, context):
 
@@ -54,10 +59,11 @@ def lambda_handler(event, context):
     x_line_signature = event["headers"]["X-Line-Signature"]
 
     # SignatureVerification
-    check_signature(body_json, x_line_signature)
+    check_result = check_signature(body_json, x_line_signature)
+    logger.info(f"response : {check_result}")
 
     for e in events_json["events"]:
-        if is_image_type_message(e["message"], e["timestamp"]):
+        if check_result == True and is_image_type_message(e["message"], e["timestamp"]):
             queue.send_message(MessageBody=json.dumps(e))
 
     body = {
